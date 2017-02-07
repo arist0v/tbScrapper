@@ -4,6 +4,7 @@ import time
 import argparse
 import string
 import random
+import os
 from threading import Thread
 
 t0 = time.time()
@@ -27,8 +28,11 @@ def getArgs():
 
 	args = parser.parse_args()
 	
-	if int(args.thread) >= int(args.maxgrabs):
+	if int(args.thread) >= int(args.maxgrabs) and args.maxgrabs > 1:
 		args.thread = int(args.maxgrabs) - 1
+	
+	if args.folder[-1:] is not "/":
+		args.folder += "/"
 
 	return args
 
@@ -83,6 +87,10 @@ def writeTB(code, data, path):
 	"""
 	function to write data into a file .tb
 	"""
+
+	if not os.path.exists(path):
+		os.makedirs(path)
+
 	filename = "{0}{1}.tb".format(path, code)
 	
 	with open(filename, "w") as theFile:
