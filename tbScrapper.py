@@ -6,15 +6,7 @@ import string
 import random
 import os
 from threading import Thread
-
-t0 = time.time()
-#start execution time timer
-dataFound = 0
-#data found counter
-
-testedCode = []
-#list of all the code that have been tested
-
+#version 0.1
 def getArgs():
 	"""
 	function to get data from command line
@@ -55,8 +47,11 @@ def testCode(code):
 	#accessing global list of tested code
 	
 	if not len(testedCode):
+		#if no code have been tested yet
 		testedCode.append(code)
+		#add code to list of tested code
 		return False
+
 	for data in testedCode:
 		#browse the list
 		if data == code:
@@ -64,6 +59,7 @@ def testCode(code):
 			return True
 		else:
 			testedCode.append(code)
+			#add code to list
 			return False
 
 def getUrl(code):
@@ -72,15 +68,20 @@ def getUrl(code):
 	"""
 	try:
 		data = urllib2.urlopen('http://termbin.com/{0}'.format(code))
+		#try to open the termbin url
 	except Exception as e:
-
+		#if got an exception
 		if e.getcode() == 404:
+			#if it's 404
 			answer = [e.getcode(), "Null"]
+			#return 404
 		else:
 			raise
+			
 	else:
 		answer = [data.getcode(), data.read()]
-	
+		#if we get valid data, return the http code and data
+
 	return answer
 
 def writeTB(code, data, path):
@@ -89,13 +90,15 @@ def writeTB(code, data, path):
 	"""
 
 	if not os.path.exists(path):
+		#if don't exist create folder
 		os.makedirs(path)
 
 	filename = "{0}{1}.tb".format(path, code)
+	#create filename with folder and code.tb
 	
 	with open(filename, "w") as theFile:
-		theFile.write(data)	
-			
+		theFile.write(data)
+		#save data to file
 
 def main(args):
 	"""
@@ -104,36 +107,63 @@ def main(args):
 	global dataFound
 		
 	while (dataFound < int(args.maxgrabs)):
+		#until we get the number of grabs
+		
 		code = genCode()
+		#get a code
+		
 		if not testCode(code):
+			#if we haven't tested it yet
 			data = getUrl(code)
+			#get data
+			
 			print("testing code: {0}".format(code))
+			#test the code
+
 			if data[0] == 200:
-				
+				#if we got http 200
 				if args.keyword is None:
+					#if we don't want specific keyword
 					writeTB(code, data[1], args.folder)
+					#write data to file
 					dataFound +=1
 				else:
 					if args.keyword in data[1]:
+						#if keyword is find in data
 						writeTB(code, data[1], args.folder)
+						#write data to file
 						dataFound +=1
 def mainThread(args):
 	i = 0
 	threads = []
+
 	while i < int(args.thread):
+		#until we didn'T get the number of thread requested
 		print "thread {0} started".format(i +1)
 		t = Thread(target=main, args=(args,))
+		#create thread
 		threads.append(t)
+		#add thread to list
 		i+=1
+
 	for t in threads:
+		#start all thread
 		t.start()
 
 	for t in threads:
+		#look all thread to wait until all finished
 		t. join()
 
 if __name__ == '__main__':
+	t0 = time.time()
+	#start execution timer
+	dataFound= 0
+	testedCode= []
 	args = getArgs()
+	#get args from command line
 	mainThread(args)
+	#start threading
 	t0 = time.time() - t0
+	#stop timer
 
 	print("{0} data(s) found in {1} seconds, saved in the folder: {2}".format(dataFound, t0, args.folder))
