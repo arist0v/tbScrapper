@@ -1,6 +1,6 @@
 #!/usr/bin/python3.5
 import urllib2
-import time
+from datetime import datetime
 import argparse
 import string
 import random
@@ -155,7 +155,7 @@ def mainThread(args):
 		t. join()
 
 if __name__ == '__main__':
-	t0 = time.time()
+	t0 = datetime.now()
 	#start execution timer
 	dataFound= 0
 	testedCode= []
@@ -163,7 +163,7 @@ if __name__ == '__main__':
 	#get args from command line
 	mainThread(args)
 	#start threading
-	t0 = time.time() - t0
+	t0 = datetime.now() - t0
 	#stop timer
 
-	print("{0} data(s) found in {1} seconds, saved in the folder: {2}".format(dataFound, t0, args.folder))
+	print("{0} data(s) found in {1} , saved in the folder: {2}".format(dataFound, t0, args.folder))
