@@ -6,7 +6,11 @@ import string
 import random
 import os
 from threading import Thread
-#version 0.1
+from Queue import Queue
+from time import sleep
+import sys
+
+#version 0.2
 def getArgs():
 	"""
 	function to get data from command line
@@ -19,10 +23,7 @@ def getArgs():
 	parser.add_argument("-t", "--thread",type=int, default=1, help="number of thread to use. Default: 1")
 
 	args = parser.parse_args()
-	
-	if int(args.thread) >= int(args.maxgrabs) and args.maxgrabs > 1:
-		args.thread = int(args.maxgrabs) - 1
-	
+
 	if args.folder[-1:] is not "/":
 		args.folder += "/"
 
@@ -100,7 +101,7 @@ def writeTB(code, data, path):
 		theFile.write(data)
 		#save data to file
 
-def main(args):
+def main(args, q):
 	"""
 	main function of the program
 	"""
@@ -109,8 +110,8 @@ def main(args):
 	while (dataFound < int(args.maxgrabs)):
 		#until we get the number of grabs
 		
-		code = genCode()
-		#get a code
+		code = q.get()
+		#get a code from queue
 		
 		if not testCode(code):
 			#if we haven't tested it yet
@@ -133,14 +134,16 @@ def main(args):
 						writeTB(code, data[1], args.folder)
 						#write data to file
 						dataFound +=1
-def mainThread(args):
+		q.task_done()
+
+def mainThread(args, q):
 	i = 0
 	threads = []
 
 	while i < int(args.thread):
 		#until we didn'T get the number of thread requested
 		print "thread {0} started".format(i +1)
-		t = Thread(target=main, args=(args,))
+		t = Thread(target=main, args=(args, q))
 		#create thread
 		threads.append(t)
 		#add thread to list
@@ -154,14 +157,38 @@ def mainThread(args):
 		#look all thread to wait until all finished
 		t. join()
 
+def code2Queue(q, args):
+	"""
+	function to fill queue with code
+	"""
+	global dataFound
+	
+	while dataFound < args.maxgrabs:
+		#until we don'T have found the # of data wanted
+		while not q.full():
+			#until queue is not full
+			code = genCode()
+			#get a code
+			q.put(code)
+			#add it to the queue
+	
 if __name__ == '__main__':
 	t0 = datetime.now()
 	#start execution timer
 	dataFound= 0
 	testedCode= []
+
 	args = getArgs()
 	#get args from command line
-	mainThread(args)
+	
+	q = Queue(5)
+	#create empty queue
+
+	codeThread = Thread(target=code2Queue, args=(q,args))
+	codeThread.start()
+	#start the code generation thread
+
+	mainThread(args, q)
 	#start threading
 	t0 = datetime.now() - t0
 	#stop timer
