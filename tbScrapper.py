@@ -107,7 +107,7 @@ def main(args, q):
 	"""
 	global dataFound
 		
-	while (dataFound < int(args.maxgrabs)):
+	while (dataFound < int(args.maxgrabs)) or len(testedCode) == (36 * 36 * 36 * 36) :
 		#until we get the number of grabs
 		
 		code = q.get()
