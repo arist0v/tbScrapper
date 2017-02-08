@@ -108,7 +108,7 @@ def main(args, q):
 	global dataFound
 		
 	while (dataFound < int(args.maxgrabs)) or len(testedCode) == (36 * 36 * 36 * 36) :
-		#until we get the number of grabs
+		#until we get the number of grabs or we have tested all code
 		
 		code = q.get()
 		#get a code from queue
