@@ -11,7 +11,7 @@ from time import sleep
 import sys
 import re
 
-#version 0.2
+#version 0.3
 def getArgs():
 	"""
 	function to get data from command line
