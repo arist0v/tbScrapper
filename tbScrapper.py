@@ -9,6 +9,7 @@ from threading import Thread
 from Queue import Queue
 from time import sleep
 import sys
+import re
 
 #version 0.2
 def getArgs():
@@ -18,13 +19,22 @@ def getArgs():
 	parser = argparse.ArgumentParser(description="try to find valid termbin page and download data")
 	parser.add_argument("-m", "--maxgrabs",type=int, default=10, help="number of valid url to get, Default: 10")
 	parser.add_argument("-f", "--folder",default="./", help="folder to save the data in, default: current folder")
-	parser.add_argument("-k", "--keyword", help="only get data that contain this keyword")
+	parser.add_argument("-k", "--keyword", help="only get data that contain this keyword can't be use with regex")
+	
+	parser.add_argument("-r", "--regex", help="get data that contain this regex can't be use with keyword")
 
 	parser.add_argument("-t", "--thread",type=int, default=1, help="number of thread to use. Default: 1")
 
 	args = parser.parse_args()
+	
+	if args.keyword and args.regex:
+		#test if both keyword and regex are selected
+		print("Error: You can't user keyword and regex at the same time.\n\n")
+		parser.print_help()
+		sys.exit(1)
 
 	if args.folder[-1:] is not "/":
+		#test if folder end with / if not add it
 		args.folder += "/"
 
 	return args
@@ -107,7 +117,7 @@ def main(args, q):
 	"""
 	global dataFound
 		
-	while (dataFound < int(args.maxgrabs)) or len(testedCode) == (36 * 36 * 36 * 36) :
+	while (dataFound < int(args.maxgrabs)) and len(testedCode) < 1679616 :
 		#until we get the number of grabs or we have tested all code
 		
 		code = q.get()
@@ -123,18 +133,25 @@ def main(args, q):
 
 			if data[0] == 200:
 				#if we got http 200
-				if args.keyword is None:
+				if args.keyword is None and args.regex is None:
 					#if we don't want specific keyword
 					writeTB(code, data[1], args.folder)
 					#write data to file
 					dataFound +=1
-				else:
+				elif args.keyword:
 					if args.keyword in data[1]:
 						#if keyword is find in data
 						writeTB(code, data[1], args.folder)
 						#write data to file
 						dataFound +=1
+				elif args.regex:
+					if re.search(args.regex, data[1]):
+						#if regex found in data
+						writeTB(code, data[1], args.folder)
+						#write data to file
+						dataFound +=1
 		q.task_done()
+	print("exited")
 
 def mainThread(args, q):
 	i = 0
