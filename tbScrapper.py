@@ -11,7 +11,7 @@ from time import sleep
 import sys
 import re
 
-#version 0.3
+version = 0.3
 def getArgs():
 	"""
 	function to get data from command line
@@ -24,6 +24,8 @@ def getArgs():
 	parser.add_argument("-r", "--regex", help="get data that contain this regex can't be use with keyword")
 
 	parser.add_argument("-t", "--thread",type=int, default=1, help="number of thread to use. Default: 1")
+	
+	parser.add_argument("-v", "--version", help="show version", action='store_true')
 
 	args = parser.parse_args()
 	
@@ -198,6 +200,10 @@ if __name__ == '__main__':
 	args = getArgs()
 	#get args from command line
 	
+	if args.version:
+		print("tbScrapper.py Version {0}".format(version))
+		sys.exit(0)
+
 	q = Queue(5)
 	#create empty queue
 
