@@ -25,10 +25,17 @@ def getArgs():
 
 	parser.add_argument("-t", "--thread",type=int, default=1, help="number of thread to use. Default: 1")
 	
+	parser.add_argument("-p", "--proxy", help="use http proxy x.x.x.x:PORT")
 	parser.add_argument("-v", "--version", help="show version", action='store_true')
 
 	args = parser.parse_args()
 	
+	if args.proxy:
+		if not re.match("[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}:[0-9]{1,5}", args.proxy):
+			print("Error, proxy must be specified like x.x.x.x:PORT")
+			parser.print_help()
+			sys.exit(1)
+
 	if args.keyword and args.regex:
 		#test if both keyword and regex are selected
 		print("Error: You can't user keyword and regex at the same time.\n\n")
@@ -190,7 +197,16 @@ def code2Queue(q, args):
 			#get a code
 			q.put(code)
 			#add it to the queue
-	
+
+def setProxy(proxy):
+	"""
+	function to set proxy to use
+	"""
+
+	proxySupport = urllib2.ProxyHandler({"http":"http://{0}".format(proxy)})
+	opener = urllib2.build_opener(proxySupport)
+	urllib2.install_opener(opener)
+
 if __name__ == '__main__':
 	t0 = datetime.now()
 	#start execution timer
@@ -199,7 +215,10 @@ if __name__ == '__main__':
 
 	args = getArgs()
 	#get args from command line
-	
+	if args.proxy:
+		#if a proxy is specified
+		setProxy(args.proxy)
+		
 	if args.version:
 		print("tbScrapper.py Version {0}".format(version))
 		sys.exit(0)
