@@ -31,7 +31,7 @@ def getArgs():
 	args = parser.parse_args()
 	
 	if args.proxy:
-		if not re.match("[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}:[0-9]{1,5}", args.proxy):
+		if not re.match("^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}:[0-9]{1,5}$", args.proxy):
 			print("Error, proxy must be specified like x.x.x.x:PORT")
 			parser.print_help()
 			sys.exit(1)
@@ -91,12 +91,16 @@ def getUrl(code):
 		#try to open the termbin url
 	except Exception as e:
 		#if got an exception
-		if e.getcode() == 404:
-			#if it's 404
-			answer = [e.getcode(), "Null"]
-			#return 404
-		else:
-			raise
+		try:
+			if e.getcode() == 404:
+				#if it's 404
+				answer = [e.getcode(), "Null"]
+				#return 404
+			else:
+				raise
+		except:
+			print("ERROR non 404 occured")
+			os._exit(1)
 			
 	else:
 		answer = [data.getcode(), data.read()]
@@ -178,7 +182,7 @@ def mainThread(args, q):
 	for t in threads:
 		#start all thread
 		t.start()
-
+					
 	for t in threads:
 		#look all thread to wait until all finished
 		t. join()
